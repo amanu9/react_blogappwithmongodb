@@ -1,10 +1,55 @@
-
-
 import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import SignupValidator from "../validators/Signupvalidator";
+
+const initialFormData = {
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: ""
+};
+
 const Signup = () => {
+  const [formData, setFormData] = useState(initialFormData);
+  const [formError, setFormError] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value  
+    }));
+
+    // Clear error when user types
+    if (formError[name]) {
+      setFormError(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const errors = SignupValidator(formData);
+    setFormError(errors);
+    
+    // Check if form is valid
+    if (Object.values(errors).every(error => !error)) {
+      console.log("Form submitted:", formData);
+      // Add your form submission logic here
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl"> {/* Increased max-width */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Create a new account
         </h2>
@@ -16,45 +61,29 @@ const Signup = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl"> {/* Increased max-width */}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-6 shadow-lg sm:rounded-lg border border-gray-200">
-          <form className="space-y-6">
-           
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  First Name
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Last Name
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  className={`block w-full px-3 py-2 border ${
+                    formError.name ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+                {formError.name && <p className="mt-1 text-sm text-red-500">{formError.name}</p>}
               </div>
             </div>
 
-           
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -65,13 +94,16 @@ const Signup = () => {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className={`block w-full px-3 py-2 border ${
+                    formError.email ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  value={formData.email}
+                  onChange={handleChange}
                 />
+                {formError.email && <p className="mt-1 text-sm text-red-500">{formError.email}</p>}
               </div>
             </div>
 
-         
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -83,13 +115,18 @@ const Signup = () => {
                     name="password"
                     type="password"
                     autoComplete="new-password"
-                    required
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className={`block w-full px-3 py-2 border ${
+                      formError.password ? "border-red-500" : "border-gray-300"
+                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    value={formData.password}
+                    onChange={handleChange}
                   />
+                  {formError.password ? (
+                    <p className="mt-1 text-sm text-red-500">{formError.password}</p>
+                  ) : (
+                    <p className="mt-2 text-xs text-gray-500">Min. 8 characters</p>
+                  )}
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
-                  Min. 8 characters
-                </p>
               </div>
 
               <div>
@@ -102,14 +139,19 @@ const Signup = () => {
                     name="confirmPassword"
                     type="password"
                     autoComplete="new-password"
-                    required
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className={`block w-full px-3 py-2 border ${
+                      formError.confirmPassword ? "border-red-500" : "border-gray-300"
+                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
                   />
+                  {formError.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-500">{formError.confirmPassword}</p>
+                  )}
                 </div>
               </div>
             </div>
 
-         
             <div className="flex items-center">
               <input
                 id="terms"
@@ -132,34 +174,6 @@ const Signup = () => {
               </button>
             </div>
           </form>
-
-          {/* <div className="mt-6"> */}
-            {/* <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Or sign up with
-                </span>
-              </div>
-            </div> */}
-
-            {/* <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span>Google</span>
-              </button>
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span>GitHub</span>
-              </button>
-            </div> */}
-          
         </div>
       </div>
     </div>
