@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import SignupValidator from "../validators/Signupvalidator";
 import { useNavigate } from "react-router-dom";
 import baseurl from "../util/axiosinistance";
-import axios from "axios";
+
 
 const initialFormData = {
   name: "",
@@ -46,45 +46,44 @@ const Signup = () => {
 
   };
 
-  const handleSubmit =async (e) => {
-    e.preventDefault();
-    
-    const errors = SignupValidator(formData);
-    setFormError(errors);
-    
-    // Check if form is valid
-    if (Object.values(errors).every(error => !error)) {
-      console.log("Form submitted:", formData);
-      // Add your form submission logic here
-    }
-     else{
-      try{
-setLoading(true); // show loading at first before api request
-// api request
-const requestbody={
-name:formData.name,
-email:formData.email,
-password:formData.password
-}
-const response =await baseurl.post(`/auth/signup`,requestbody);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-console.log(response);
+  const errors = SignupValidator(formData);
+  setFormError(errors);
 
-setFormData(initialFormData)
+  const hasError = Object.values(errors).some(error => error);
+  if (hasError) {
+    toast.error("Please fix the form errors.");
+    return;
+  }
 
-  toast.success("Signup successful!");// toas message success
-setLoading(false)// finally set loading to false after api request
- setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-      }catch(error){
-         toast.error("Signup failed. Please try again.");// tas message for failure
-        setLoading(false)// set loading to false even if there is errror also here
-        console.log(error.message);
+  try {
+    setLoading(true);
 
-      }
-    }
-  };
+    const requestbody = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    };
+
+    const response = await baseurl.post(`/auth/signup`, requestbody);
+    console.log(response);
+
+    toast.success("Signup successful!");
+
+    setFormData(initialFormData);
+    setTimeout(() => {
+      navigate("/login");
+    }, 1500);
+  } catch (error) {
+    toast.error("Signup failed. Please try again.");
+    console.error(error?.response?.data || error.message);
+  } finally {
+    setLoading(false); // Always stop loading, success or fail
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -168,7 +167,7 @@ setLoading(false)// finally set loading to false after api request
                 </div>
               </div>
 
-              {/* <div>
+              <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirm Password
                 </label>
@@ -188,7 +187,7 @@ setLoading(false)// finally set loading to false after api request
                     <p className="mt-1 text-sm text-red-500">{formError.confirmPassword}</p>
                   )}
                 </div>
-              </div> */}
+              </div>
             </div>
 
             <div className="flex items-center">

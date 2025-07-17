@@ -1,4 +1,84 @@
+import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import loginvalidator from "../validators/loginValidator";
+import { useNavigate } from "react-router-dom";
+import baseurl from "../util/axiosinistance";
+const initialFormData = {
+  
+  email: "",
+  password: "",
+  
+};
 const Login = () => {
+   const navigate = useNavigate();
+
+   const [loading,setLoading]=useState(false);// to show loading state 
+     const [formData, setFormData] = useState(initialFormData);
+   
+     const [formError, setFormError] = useState({
+       
+       email: "",
+       password: ""
+    
+     });
+
+
+      const handleChange =async (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value  
+    }));
+
+    // Clear error when user types
+    if (formError[name]) {
+      setFormError(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+   
+
+  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const errors = loginvalidator(formData);
+  setFormError(errors);
+
+  const hasError = Object.values(errors).some(error => error);
+  if (hasError) {
+    toast.error("Please fill out all fields.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const requestbody = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    const response = await baseurl.post(`/auth/signin`, requestbody);
+    console.log(response);
+
+    setFormData(initialFormData);
+    setLoading(false);
+
+    
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
+  } catch (error) {
+    setLoading(false);
+    toast.error("Incorrect credential. Please try again.");
+    console.log(error?.response?.data || error.message);
+  }
+};
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -9,8 +89,8 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200">
-          <form className="space-y-6">
-            <div>
+          <form className="space-y-6" onSubmit={handleSubmit} >
+             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
@@ -20,26 +100,41 @@ const Login = () => {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className={`block w-full px-3 py-2 border ${
+                    formError.email ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  value={formData.email}
+                  onChange={handleChange}
                 />
+                {formError.email && <p className="mt-1 text-sm text-red-500">{formError.email}</p>}
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    className={`block w-full px-3 py-2 border ${
+                      formError.password ? "border-red-500" : "border-gray-300"
+                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  {formError.password ? (
+                    <p className="mt-1 text-sm text-red-500">{formError.password}</p>
+                  ) : (
+                    <p className="mt-2 text-xs text-gray-500"></p>
+                  )}
+                </div>
               </div>
+
             </div>
 
             <div className="flex items-center justify-between">
@@ -101,6 +196,7 @@ const Login = () => {
           </div>
         </div>
       </div>
+        <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
