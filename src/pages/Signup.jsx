@@ -2,8 +2,9 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
 import SignupValidator from "../validators/Signupvalidator";
+import { useNavigate } from "react-router-dom";
+import baseurl from "../util/axiosinistance";
 import axios from "axios";
 
 const initialFormData = {
@@ -14,6 +15,9 @@ const initialFormData = {
 };
 
 const Signup = () => {
+  
+  const navigate = useNavigate();
+
   const [loading,setLoading]=useState(false);// to show loading state 
   const [formData, setFormData] = useState(initialFormData);
 
@@ -62,7 +66,7 @@ name:formData.name,
 email:formData.email,
 password:formData.password
 }
-const response =await axios.post(`http://127.0.0.1:8000/api/auth/signup`,requestbody);
+const response =await baseurl.post(`/auth/signup`,requestbody);
 
 console.log(response);
 
@@ -70,7 +74,9 @@ setFormData(initialFormData)
 
   toast.success("Signup successful!");// toas message success
 setLoading(false)// finally set loading to false after api request
-
+ setTimeout(() => {
+        navigate("/login");
+      }, 2000);
       }catch(error){
          toast.error("Signup failed. Please try again.");// tas message for failure
         setLoading(false)// set loading to false even if there is errror also here
