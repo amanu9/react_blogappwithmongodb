@@ -1,6 +1,10 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 import SignupValidator from "../validators/Signupvalidator";
+import axios from "axios";
 
 const initialFormData = {
   name: "",
@@ -10,7 +14,9 @@ const initialFormData = {
 };
 
 const Signup = () => {
+  const [loading,setLoading]=useState(false);// to show loading state 
   const [formData, setFormData] = useState(initialFormData);
+
   const [formError, setFormError] = useState({
     name: "",
     email: "",
@@ -18,7 +24,7 @@ const Signup = () => {
     confirmPassword: ""
   });
 
-  const handleChange = (e) => {
+  const handleChange =async (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -32,9 +38,11 @@ const Signup = () => {
         [name]: ""
       }));
     }
+   
+
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit =async (e) => {
     e.preventDefault();
     
     const errors = SignupValidator(formData);
@@ -44,6 +52,31 @@ const Signup = () => {
     if (Object.values(errors).every(error => !error)) {
       console.log("Form submitted:", formData);
       // Add your form submission logic here
+    }
+     else{
+      try{
+setLoading(true); // show loading at first before api request
+// api request
+const requestbody={
+name:formData.name,
+email:formData.email,
+password:formData.password
+}
+const response =await axios.post(`http://127.0.0.1:8000/api/auth/signup`,requestbody);
+
+console.log(response);
+
+setFormData(initialFormData)
+
+  toast.success("Signup successful!");// toas message success
+setLoading(false)// finally set loading to false after api request
+
+      }catch(error){
+         toast.error("Signup failed. Please try again.");// tas message for failure
+        setLoading(false)// set loading to false even if there is errror also here
+        console.log(error.message);
+
+      }
     }
   };
 
@@ -129,7 +162,7 @@ const Signup = () => {
                 </div>
               </div>
 
-              <div>
+              {/* <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirm Password
                 </label>
@@ -149,7 +182,7 @@ const Signup = () => {
                     <p className="mt-1 text-sm text-red-500">{formError.confirmPassword}</p>
                   )}
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center">
@@ -165,17 +198,19 @@ const Signup = () => {
               </label>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Create Account
-              </button>
-            </div>
+           <div>
+  <button
+    type="submit"
+    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+  >
+    {loading ? "Loading..." : "Sign Up"}
+  </button>
+</div>
+
           </form>
         </div>
       </div>
+       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
