@@ -63,12 +63,12 @@ const handleSubmit = async (e) => {
     };
 
     const response = await baseurl.post(`/auth/signin`, requestbody);
-    console.log(response);
+   
 
     setFormData(initialFormData);
     setLoading(false);
 
-    
+ 
     setTimeout(() => {
       navigate("/");
     }, 1000);
@@ -85,6 +85,7 @@ const handleSubmit = async (e) => {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
         </h2>
+
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
